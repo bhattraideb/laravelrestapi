@@ -16,9 +16,9 @@ Route::get('/', function () {
 });
 
 Route::group(['prefix' => 'api/v1'], function(){
-    //Route::resource('meeting', 'MeetingController', [
-      //  'except' => ['edit', 'create']
-    //]);
+    Route::resource('meeting', 'MeetingController', [
+        'except' => ['edit', 'create']
+    ]);
 
     Route::resource('meeting/registration', 'RegistrationController', [
         'only' => ['store', 'destroy']

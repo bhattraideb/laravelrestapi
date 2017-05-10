@@ -2,11 +2,19 @@
 
 namespace App\Http\Controllers;
 
-use App\Meeting;
 use Illuminate\Http\Request;
+use App\Http\Requests;
+use App\User;
+use App\Meeting;
+use Tymon\JWTAuth\JWTAuth;
 
 class RegistrationController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('jwt.auth');
+    }
+
     /**
      * Store a newly created resource in storage.
      *
@@ -53,7 +61,6 @@ class RegistrationController extends Controller
         ];
 
         return response()->json($response, 201);
-        //return 'It works fine!';
     }
 
     /**
@@ -65,35 +72,27 @@ class RegistrationController extends Controller
     public function destroy($id)
     {
         $meeting = Meeting::findOrFail($id);
-        $meeting->users()->detach();
+
+        if(! $user = JWTAuth::parseToken()->authenticate()){
+            return response()->json(['msg' => 'User not found'], 404);
+        }
+
+        if($meeting->users()->where('users.id', $user->id)->first()){
+            return response()->json(['msg' => 'User not registered for the meeting, delete operation not successful!'], 401);
+        }
+
+        $meeting->users()->detach($user->id);
 
         $response = [
             'msg' => 'User unregistered for meeting',
             'meeting' => $meeting,
-            //'user' => $user,
-            'user' => 'tbd',
+            'user' => $user,
             'unregister' => [
                 'href' => 'api/v1/meeting/registration/1',
                 'method' => 'POST',
                 'params' => 'user_id, meetin_id'
             ]
         ];
-
-        /*$meeting = [
-            'title' => 'Title',
-            'description' => 'Description',
-            'time' => 'Time',
-            'user_id' => 'User Id',
-            'view_meeting' => [
-                'href' => 'api/v1/meeting/1',
-                'method' => 'GET'
-            ],
-        ];
-
-        $user = [
-            'name' => 'Name'
-        ];
-        */
 
         return response()->json($response, 200);
     }
