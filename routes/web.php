@@ -15,20 +15,25 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Route::group(['prefix' => 'api/v1'], function(){
-    Route::resource('meeting', 'MeetingController', [
-        'except' => ['edit', 'create']
-    ]);
 
-    Route::resource('meeting/registration', 'RegistrationController', [
-        'only' => ['store', 'destroy']
-    ]);
+Route::group(['middleware' => ['api']], function(){
 
-    Route::post('user',  [
-        'uses' => 'AuthController@store'
-    ]);
+    Route::group(['prefix' => 'v1'], function(){
+        Route::resource('meeting', 'MeetingController', [
+            'except' => ['edit', 'create']
+        ]);
 
-    Route::post('user/signin',  [
-        'uses' => 'AuthController@signin'
-    ]);
+        Route::resource('meeting/registration', 'RegistrationController', [
+            'only' => ['store', 'destroy']
+        ]);
+
+        Route::post('user',  [
+            'uses' => 'AuthController@store'
+        ]);
+
+        Route::post('user/signin',  [
+            'uses' => 'AuthController@signin'
+        ]);
+    });
+
 });
